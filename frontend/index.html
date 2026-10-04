@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qual filme eu estou pensando?</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Qual filme eu estou pensando?</h1>
+
+    <section id="tela-config">
+      <p>O site escolheu um filme em segredo. Descubra qual é!</p>
+      <label for="max-perguntas">Quantas perguntas você quer ter?</label>
+      <input type="number" id="max-perguntas" value="10" min="1" max="50">
+      <button id="btn-iniciar">Começar jogo</button>
+    </section>
+
+    <section id="tela-jogo" hidden>
+      <p id="contador"></p>
+      <ul id="historico"></ul>
+
+      <form id="form-pergunta">
+        <input type="text" id="campo-pergunta" placeholder="Faça uma pergunta de sim ou não..." autocomplete="off">
+        <button type="submit">Perguntar</button>
+      </form>
+
+      <form id="form-palpite">
+        <input type="text" id="campo-palpite" placeholder="Qual é o seu palpite final?" autocomplete="off">
+        <button type="submit">Chutar</button>
+      </form>
+    </section>
+
+    <section id="tela-resultado" hidden>
+      <h2 id="resultado-titulo"></h2>
+      <p id="resultado-texto"></p>
+      <button id="btn-novo">Jogar de novo</button>
+    </section>
+
+    <p id="erro" role="alert"></p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
