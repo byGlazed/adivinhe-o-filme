@@ -45,6 +45,8 @@ func criarPartidaHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("GET /api/saude", saudeHandler)
 	http.HandleFunc("POST /api/partidas", criarPartidaHandler)
+	http.HandleFunc("POST /api/partidas/{id}/perguntas", perguntarHandler)
+	http.HandleFunc("POST /api/partidas/{id}/palpite", palpiteHandler)
 
 	log.Println("Servidor rodando em http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
