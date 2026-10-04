@@ -53,6 +53,7 @@ func main() {
 	http.HandleFunc("POST /api/partidas", criarPartidaHandler)
 	http.HandleFunc("POST /api/partidas/{id}/perguntas", perguntarHandler)
 	http.HandleFunc("POST /api/partidas/{id}/palpite", palpiteHandler)
+	http.HandleFunc("GET /api/filmes/busca", buscarFilmesHandler)
 	http.Handle("/", http.FileServer(http.Dir("../frontend")))
 
 	log.Println("Servidor rodando em http://localhost:8080")

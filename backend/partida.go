@@ -71,22 +71,28 @@ func desfazerPergunta(id string) {
 	}
 }
 
-
-// finalizarPartida confere o palpite e encerra a partida.
-func finalizarPartida(id, palpite string) (bool, Filme, error) {
+func finalizarPartida(id, palpite string, filmeID int) (bool, Partida, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	p, ok := partidas[id]
 	if !ok {
-		return false, Filme{}, ErrPartidaNaoEncontrada
+		return false, Partida{}, ErrPartidaNaoEncontrada
 	}
 	if p.Finalizada {
-		return false, Filme{}, ErrPartidaFinalizada
+		return false, Partida{}, ErrPartidaFinalizada
 	}
 
 	p.Finalizada = true
-	acertou := normalizar(palpite) == normalizar(p.FilmeSecreto.Titulo) ||
-  	normalizar(palpite) == normalizar(p.FilmeSecreto.TituloOriginal)
-	return acertou, p.FilmeSecreto, nil
+
+	var acertou bool
+	if filmeID != 0 && p.FilmeSecreto.ID != 0 {
+		// Escolheu da lista: compara pelo ID do TMDb
+		acertou = filmeID == p.FilmeSecreto.ID
+	} else {
+		// Digitou à mão (ou o filme é do plano B): compara pelo título
+		acertou = normalizar(palpite) == normalizar(p.FilmeSecreto.Titulo) ||
+			normalizar(palpite) == normalizar(p.FilmeSecreto.TituloOriginal)
+	}
+	return acertou, *p, nil
 }

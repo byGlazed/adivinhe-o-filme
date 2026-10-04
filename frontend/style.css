@@ -1,44 +1,250 @@
+:root {
+  --fundo-cartao: rgba(40, 25, 43, 0.9);    /* 28192B 90% */
+  --roxo-claro: rgba(184, 161, 255, 0.67);  /* B8A1FF 67% */
+  --roxo: #5e00ff;                          /* 5E00FF 100% */
+  --branco: #ffffff;
+  --preto: #000000;
+}
+
+* { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
 body {
-  font-family: system-ui, sans-serif;
-  background: #14181f;
-  color: #e8eaed;
   margin: 0;
+  min-height: 100vh;
+  padding: 1rem;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  background: #1e1e1e;
+  color: var(--branco);
+  font-family: "Pixelify Sans", system-ui, sans-serif;
+  font-variant-ligatures: none;
 }
 
-main {
+p { margin: 0; }
+
+.texto-claro { color: var(--roxo-claro); }
+
+/* ---------- Cartão ---------- */
+.cartao {
   width: 100%;
-  max-width: 600px;
-  padding: 2rem 1rem;
+  max-width: 340px;
+  min-height: 390px;
+  padding: 1.4rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--fundo-cartao);
+  border: 2px solid var(--roxo);
 }
 
-h1 { text-align: center; }
+.cartao section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 
-input, button {
-  font-size: 1rem;
-  padding: 0.6rem 0.8rem;
+h1 {
+  margin: 0 0 1.1rem;
+  font-family: "Irish Grover", cursive;
+  font-weight: 400;
+  font-size: 2.1rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* ---------- Campos e botões ---------- */
+.campo,
+.pilula {
+  background: var(--roxo-claro);
+  border: 2px solid var(--roxo);
+  color: var(--preto);
+  font: inherit;
+}
+
+.campo {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 0.6rem;
   border-radius: 6px;
-  border: 1px solid #3a4150;
+  font-size: 0.85rem;
 }
 
-input { background: #1e2430; color: inherit; }
+.campo::placeholder { color: #1b0f2e; opacity: 0.85; }
 
-button {
-  background: #2f6fed;
-  color: white;
-  border: none;
+.pilula {
+  width: 3.2rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.85rem;
+  -moz-appearance: textfield;
+}
+.pilula::-webkit-outer-spin-button,
+.pilula::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.campo:disabled { opacity: 0.55; }
+
+.btn-seta {
+  flex: none;
+  width: 44px;
+  height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--roxo-claro);
+  border: 2px solid var(--roxo);
+  cursor: pointer;
+}
+.btn-seta:hover:not(:disabled) { filter: brightness(1.2); }
+.btn-seta:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.seta {
+  width: 15px;
+  height: 21px;
+  fill: var(--roxo);
+  shape-rendering: crispEdges;
+}
+
+.campo:focus-visible,
+.pilula:focus-visible,
+.btn-seta:focus-visible {
+  outline: 2px solid var(--branco);
+  outline-offset: 2px;
+}
+
+/* ---------- Tela 1 ---------- */
+.linha-perguntas {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1.3rem 0 0.4rem;
+}
+
+.erro-config {
+  min-height: 1.2rem;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.btn-centro { align-self: center; margin: 0.4rem 0 1.4rem; }
+
+.como-jogar {
+  margin-top: auto;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+/* ---------- Tela 2 ---------- */
+.linha-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.4rem 0;
+}
+
+.resposta {
+  min-height: 3.6rem;
+  margin: 0.7rem 0 0.1rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  white-space: pre-line;
+}
+.resposta.preenchida { font-size: 1.1rem; }
+
+.contador {
+  min-height: 1rem;
+  margin-bottom: 0.7rem;
+  font-size: 0.75rem;
+}
+
+.linha-acao {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+.linha-acao.centralizada { justify-content: center; }
+.linha-acao span { max-width: 9.5rem; }
+.linha-acao.centralizada span { max-width: none; }
+
+/* ---------- Autocomplete do palpite ---------- */
+.campo-busca { position: relative; flex: 1; min-width: 0; }
+.campo-busca .campo { width: 100%; }
+
+.sugestoes {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 11rem;
+  overflow-y: auto;
+  background: #28192b;
+  border: 2px solid var(--roxo);
+  border-radius: 6px;
+}
+
+.sugestoes li {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 
-button:disabled { background: #3a4150; cursor: not-allowed; }
+.sugestoes li:hover,
+.sugestoes li.ativo {
+  background: var(--roxo-claro);
+  color: var(--preto);
+}
 
-form { display: flex; gap: 0.5rem; margin-top: 1rem; }
-form input { flex: 1; }
+/* ---------- Tela 3 ---------- */
+.resultado-grid {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 1rem;
+  margin: 0.8rem 0 1rem;
+}
 
-#historico { padding-left: 1.2rem; }
-#historico li { margin: 0.4rem 0; }
+.detalhes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
 
-#erro { color: #ff6b6b; min-height: 1.5rem; }
+.capa {
+  width: 90px;
+  aspect-ratio: 2 / 3;
+  background: #d9d9d9;
+  overflow: hidden;
+}
+.capa img { width: 100%; height: 100%; display: block; object-fit: cover; }
+
+.res-mensagem {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+/* ---------- Créditos ---------- */
+.creditos {
+  max-width: 340px;
+  margin-top: 1rem;
+  font-size: 0.65rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--roxo-claro);
+}

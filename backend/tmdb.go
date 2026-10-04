@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"net/url"
 )
 
 var clienteHTTP = &http.Client{Timeout: 10 * time.Second}
@@ -25,6 +26,7 @@ type respostaDetalhes struct {
 	ReleaseDate   string `json:"release_date"`
 	Overview      string `json:"overview"`
 	Runtime       int    `json:"runtime"`
+	PosterPath    string `json:"poster_path"`
 	Genres        []struct {
 		Name string `json:"name"`
 	} `json:"genres"`
@@ -87,10 +89,15 @@ func sortearFilmeTMDb() (Filme, error) {
 	}
 
 	f := Filme{
+		ID:             id,
 		Titulo:         d.Title,
 		TituloOriginal: d.OriginalTitle,
 		Sinopse:        d.Overview,
 		DuracaoMin:     d.Runtime,
+	}
+
+	if d.PosterPath != "" {
+	f.Capa = "https://image.tmdb.org/t/p/w500" + d.PosterPath
 	}
 
 	if len(d.ReleaseDate) >= 4 {
@@ -112,4 +119,40 @@ func sortearFilmeTMDb() (Filme, error) {
 		f.Elenco = append(f.Elenco, a.Name)
 	}
 	return f, nil
+}
+
+type SugestaoFilme struct {
+	ID     int    `json:"id"`
+	Titulo string `json:"titulo"`
+	Ano    int    `json:"ano"`
+}
+
+type respostaBusca struct {
+	Results []struct {
+		ID          int    `json:"id"`
+		Title       string `json:"title"`
+		ReleaseDate string `json:"release_date"`
+	} `json:"results"`
+}
+
+// buscarFilmesTMDb procura filmes pelo nome (para o autocomplete do palpite).
+func buscarFilmesTMDb(q string) ([]SugestaoFilme, error) {
+	var r respostaBusca
+	caminho := "/search/movie?language=pt-BR&include_adult=false&page=1&query=" + url.QueryEscape(q)
+	if err := tmdbGet(caminho, &r); err != nil {
+		return nil, err
+	}
+
+	sugestoes := []SugestaoFilme{}
+	for _, f := range r.Results {
+		s := SugestaoFilme{ID: f.ID, Titulo: f.Title}
+		if len(f.ReleaseDate) >= 4 {
+			s.Ano, _ = strconv.Atoi(f.ReleaseDate[:4])
+		}
+		sugestoes = append(sugestoes, s)
+		if len(sugestoes) == 8 {
+			break
+		}
+	}
+	return sugestoes, nil
 }

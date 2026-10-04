@@ -8,6 +8,7 @@ import (
 // Filme guarda tudo o que sabemos sobre o filme secreto.
 // Sem tags json de propósito: este struct nunca deve ser enviado ao navegador.
 type Filme struct {
+	ID             int
 	Titulo         string
 	TituloOriginal string
 	Ano            int
@@ -16,6 +17,7 @@ type Filme struct {
 	Elenco         []string
 	DuracaoMin     int
 	Sinopse        string
+	Capa 		   string
 }
 
 // Plano B, caso o TMDb esteja fora do ar ou sem token.

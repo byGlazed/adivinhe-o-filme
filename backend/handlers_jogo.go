@@ -20,11 +20,17 @@ type RespostaPergunta struct {
 
 type PedidoPalpite struct {
 	Palpite string `json:"palpite"`
+	FilmeID int    `json:"filme_id"`
 }
 
 type RespostaPalpite struct {
-	Acertou bool   `json:"acertou"`
-	Filme   string `json:"filme"`
+	Acertou         bool     `json:"acertou"`
+	Filme           string   `json:"filme"`
+	Diretor         string   `json:"diretor"`
+	Ano             int      `json:"ano"`
+	Generos         []string `json:"generos"`
+	Capa            string   `json:"capa"`
+	PerguntasFeitas int      `json:"perguntas_feitas"`
 }
 
 func escreverJSON(w http.ResponseWriter, status int, dados any) {
@@ -87,11 +93,36 @@ func palpiteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	acertou, filme, err := finalizarPartida(id, pedido.Palpite)
+	acertou, p, err := finalizarPartida(id, pedido.Palpite, pedido.FilmeID)
 	if err != nil {
 		http.Error(w, err.Error(), statusDoErro(err))
 		return
 	}
 
-	escreverJSON(w, http.StatusOK, RespostaPalpite{Acertou: acertou, Filme: filme.Titulo})
+	f := p.FilmeSecreto
+	escreverJSON(w, http.StatusOK, RespostaPalpite{
+		Acertou:         acertou,
+		Filme:           f.Titulo,
+		Diretor:         f.Diretor,
+		Ano:             f.Ano,
+		Generos:         f.Generos,
+		Capa:            f.Capa,
+		PerguntasFeitas: p.PerguntasFeitas,
+	})
+}
+
+func buscarFilmesHandler(w http.ResponseWriter, r *http.Request) {
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	if n := len([]rune(q)); n < 2 || n > 60 {
+		escreverJSON(w, http.StatusOK, []SugestaoFilme{})
+		return
+	}
+
+	sugestoes, err := buscarFilmesTMDb(q)
+	if err != nil {
+		// O autocomplete é um extra: se falhar, o jogo segue funcionando sem a lista
+		log.Println("erro na busca de filmes:", err)
+		sugestoes = []SugestaoFilme{}
+	}
+	escreverJSON(w, http.StatusOK, sugestoes)
 }

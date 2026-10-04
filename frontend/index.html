@@ -3,43 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qual filme eu estou pensando?</title>
+  <title>Adivinhe o Filme</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Irish+Grover&family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
-    <h1>Qual filme eu estou pensando?</h1>
+  <!-- Seta pixelada, reaproveitada em todos os botões -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="seta" viewBox="0 0 5 7">
+      <rect x="0" y="0" width="2" height="1"/>
+      <rect x="1" y="1" width="2" height="1"/>
+      <rect x="2" y="2" width="2" height="1"/>
+      <rect x="3" y="3" width="2" height="1"/>
+      <rect x="2" y="4" width="2" height="1"/>
+      <rect x="1" y="5" width="2" height="1"/>
+      <rect x="0" y="6" width="2" height="1"/>
+    </symbol>
+  </svg>
 
+  <main class="cartao">
+    <h1>Adivinhe o Filme</h1>
+
+    <!-- TELA 1: configuração -->
     <section id="tela-config">
-      <p>O site escolheu um filme em segredo. Descubra qual é!</p>
-      <label for="max-perguntas">Quantas perguntas você quer ter?</label>
-      <input type="number" id="max-perguntas" value="10" min="1" max="50">
-      <button id="btn-iniciar">Começar jogo</button>
+      <p class="texto-claro">Pensei em um filme, tente acertar heheheh</p>
+
+      <div class="linha-perguntas">
+        <label for="max-perguntas" class="texto-claro">Quantas Perguntas?</label>
+        <input type="number" id="max-perguntas" class="pilula" value="10" min="1" max="50">
+      </div>
+
+      <p id="erro-config" class="erro-config" role="alert"></p>
+
+      <button id="btn-iniciar" type="button" class="btn-seta btn-centro" aria-label="Começar jogo">
+        <svg class="seta" aria-hidden="true"><use href="#seta"/></svg>
+      </button>
+
+      <p class="como-jogar">Como jogar: Selecione a quantidade de perguntas e as faça até acabar (apenas de sim ou não) ou tente palpitar antes, se você acertar, você vence, se palpitar errado, você perde. Boa sorte :&gt;</p>
     </section>
 
+      <!-- TELA 2: jogo -->
     <section id="tela-jogo" hidden>
-      <p id="contador"></p>
-      <ul id="historico"></ul>
-
-      <form id="form-pergunta">
-        <input type="text" id="campo-pergunta" placeholder="Faça uma pergunta de sim ou não..." autocomplete="off">
-        <button type="submit">Perguntar</button>
+      <form id="form-pergunta" class="linha-campo">
+        <input type="text" id="campo-pergunta" class="campo" maxlength="300"
+               placeholder="Faça sua pergunta (Sim ou Não):" aria-label="Sua pergunta" autocomplete="off">
+        <button type="submit" class="btn-seta" aria-label="Perguntar">
+          <svg class="seta" aria-hidden="true"><use href="#seta"/></svg>
+        </button>
       </form>
 
-      <form id="form-palpite">
-        <input type="text" id="campo-palpite" placeholder="Qual é o seu palpite final?" autocomplete="off">
-        <button type="submit">Chutar</button>
+      <p id="resposta" class="resposta" aria-live="polite">Resposta da pergunta</p>
+      <p id="contador" class="contador texto-claro"></p>
+
+      <form id="form-palpite" class="linha-campo" autocomplete="off">
+        <div class="campo-busca">
+          <input type="text" id="campo-palpite" class="campo"
+                 placeholder="Quer palpitar? Digite o filme:" aria-label="Seu palpite"
+                 autocomplete="off" role="combobox" aria-autocomplete="list"
+                 aria-expanded="false" aria-controls="sugestoes">
+          <ul id="sugestoes" class="sugestoes" role="listbox" hidden></ul>
+        </div>
+        <button type="submit" class="btn-seta" aria-label="Palpitar">
+          <svg class="seta" aria-hidden="true"><use href="#seta"/></svg>
+        </button>
       </form>
+
+      <div class="linha-acao">
+        <span id="rotulo-proximo">Ver Resultado ou Próxima pergunta</span>
+        <button id="btn-proximo" type="button" class="btn-seta" disabled>
+          <svg class="seta" aria-hidden="true"><use href="#seta"/></svg>
+        </button>
+      </div>
     </section>
 
+    <!-- TELA 3: resultado -->
     <section id="tela-resultado" hidden>
-      <h2 id="resultado-titulo"></h2>
-      <p id="resultado-texto"></p>
-      <button id="btn-novo">Jogar de novo</button>
-    </section>
+      <p>O filme era:</p>
 
-    <p id="erro" role="alert"></p>
+      <div class="resultado-grid">
+        <ul id="res-detalhes" class="detalhes"></ul>
+        <div class="capa">
+          <img id="res-capa" alt="Capa do filme" hidden>
+        </div>
+      </div>
+
+      <p id="res-mensagem" class="res-mensagem"></p>
+
+      <div class="linha-acao centralizada">
+        <span>Jogar Novamente?</span>
+        <button id="btn-novo" type="button" class="btn-seta" aria-label="Jogar novamente">
+          <svg class="seta" aria-hidden="true"><use href="#seta"/></svg>
+        </button>
+      </div>
+    </section>
   </main>
+
+  <p class="creditos">Dados e capas de filmes: TMDB. Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.</p>
 
   <script src="script.js"></script>
 </body>
