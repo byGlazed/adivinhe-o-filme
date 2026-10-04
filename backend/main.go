@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"github.com/joho/godotenv"
 )
 
 type Resposta struct {
@@ -35,7 +36,9 @@ func criarPartidaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := novaPartida(pedido.MaxPerguntas)
+	  filme := sortearFilme()
+	p := novaPartida(filme, pedido.MaxPerguntas)
+  	log.Printf("[dev] partida %s: %s (%d), dir. %s", p.ID, filme.Titulo, filme.Ano, filme.Diretor)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -43,6 +46,9 @@ func criarPartidaHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	  if err := godotenv.Load(); err != nil {
+  	log.Println("aviso: arquivo .env não encontrado, usando variáveis do sistema")
+  }
 	http.HandleFunc("GET /api/saude", saudeHandler)
 	http.HandleFunc("POST /api/partidas", criarPartidaHandler)
 	http.HandleFunc("POST /api/partidas/{id}/perguntas", perguntarHandler)

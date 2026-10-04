@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"math/rand"
 	"strconv"
 	"sync"
 )
@@ -26,19 +25,18 @@ var (
 	mutex     sync.Mutex
 	proximoID int
 )
+  func novaPartida(filme Filme, maxPerguntas int) *Partida {
+  	mutex.Lock()
+  	defer mutex.Unlock()
 
-func novaPartida(maxPerguntas int) *Partida {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	proximoID++
-	p := &Partida{
-		ID:           strconv.Itoa(proximoID),
-		FilmeSecreto: bancoDeFilmes[rand.Intn(len(bancoDeFilmes))],
-		MaxPerguntas: maxPerguntas,
-	}
-	partidas[p.ID] = p
-	return p
+  	proximoID++
+  	p := &Partida{
+  		ID:           strconv.Itoa(proximoID),
+  		FilmeSecreto: filme,
+  		MaxPerguntas: maxPerguntas,
+  	}
+  	partidas[p.ID] = p
+  	return p
 }
 
 // registrarPergunta confere se ainda dá para perguntar e conta a pergunta.
@@ -76,6 +74,7 @@ func finalizarPartida(id, palpite string) (bool, Filme, error) {
 	}
 
 	p.Finalizada = true
-	acertou := normalizar(palpite) == normalizar(p.FilmeSecreto.Titulo)
+	acertou := normalizar(palpite) == normalizar(p.FilmeSecreto.Titulo) ||
+  	normalizar(palpite) == normalizar(p.FilmeSecreto.TituloOriginal)
 	return acertou, p.FilmeSecreto, nil
 }
