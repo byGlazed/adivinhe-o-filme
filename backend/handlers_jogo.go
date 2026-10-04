@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"log"
 )
 
 type PedidoPergunta struct {
@@ -51,6 +52,10 @@ func perguntarHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "envie uma pergunta", http.StatusBadRequest)
 		return
 	}
+	if len([]rune(pedido.Pergunta)) > 300 {
+		http.Error(w, "pergunta muito longa (máximo de 300 caracteres)", http.StatusBadRequest)
+		return
+	}
 
 	p, err := registrarPergunta(id)
 	if err != nil {
@@ -58,7 +63,13 @@ func perguntarHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resposta := responderPergunta(p.FilmeSecreto, pedido.Pergunta)
+	resposta, err := responderPergunta(p.FilmeSecreto, pedido.Pergunta)
+	if err != nil {
+		log.Println("erro ao consultar a IA:", err)
+		desfazerPergunta(id)
+		http.Error(w, "a IA não conseguiu responder agora, tente de novo (esta pergunta não foi contada)", http.StatusBadGateway)
+		return
+	}
 
 	escreverJSON(w, http.StatusOK, RespostaPergunta{
 		Resposta:           resposta,

@@ -24,7 +24,10 @@ function mostrarErro(mensagem) {
   erro.textContent = mensagem;
 }
 
+let perguntasRestantes = 0;
+
 function atualizarContador(restantes) {
+  perguntasRestantes = restantes;
   contador.textContent = `Perguntas restantes: ${restantes}`;
   // Sem perguntas sobrando, bloqueia o formulário de perguntas
   for (const el of formPergunta.elements) {
@@ -68,6 +71,9 @@ formPergunta.addEventListener("submit", async (evento) => {
   const pergunta = campoPergunta.value.trim();
   if (!pergunta) return;
 
+  // Bloqueia o formulário enquanto a IA pensa, para não gastar duas perguntas com um clique duplo
+  for (const el of formPergunta.elements) el.disabled = true;
+
   try {
     const dados = await chamarApi(`/api/partidas/${partidaId}/perguntas`, { pergunta });
 
@@ -79,6 +85,10 @@ formPergunta.addEventListener("submit", async (evento) => {
     atualizarContador(dados.perguntas_restantes);
   } catch (e) {
     mostrarErro(e.message);
+  } finally {
+    // Libera de volta, a não ser que as perguntas tenham acabado
+    for (const el of formPergunta.elements) el.disabled = perguntasRestantes === 0;
+    campoPergunta.focus();
   }
 });
 

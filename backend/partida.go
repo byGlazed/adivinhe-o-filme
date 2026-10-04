@@ -60,6 +60,18 @@ func registrarPergunta(id string) (Partida, error) {
 	return *p, nil
 }
 
+
+// desfazerPergunta devolve uma pergunta ao jogador quando a IA falha.
+func desfazerPergunta(id string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if p, ok := partidas[id]; ok && p.PerguntasFeitas > 0 {
+		p.PerguntasFeitas--
+	}
+}
+
+
 // finalizarPartida confere o palpite e encerra a partida.
 func finalizarPartida(id, palpite string) (bool, Filme, error) {
 	mutex.Lock()
