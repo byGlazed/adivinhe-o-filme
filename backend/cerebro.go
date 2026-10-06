@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"log"
+	"strings"
 )
 
 const instrucaoSistema = `Você é o "cérebro" de um jogo de 20 perguntas sobre filmes.

@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
-	"log"
 )
 
 type PedidoPergunta struct {
@@ -47,6 +47,8 @@ func statusDoErro(err error) int {
 		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
+	case errors.Is(err, ErrServidorCheio):
+		return http.StatusServiceUnavailable
 	}
 }
 
@@ -58,8 +60,8 @@ func perguntarHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "envie uma pergunta", http.StatusBadRequest)
 		return
 	}
-	if len([]rune(pedido.Pergunta)) > 300 {
-		http.Error(w, "pergunta muito longa (máximo de 300 caracteres)", http.StatusBadRequest)
+	if n := len([]rune(strings.TrimSpace(pedido.Pergunta))); n < 3 || n > 300 {
+		http.Error(w, "a pergunta deve ter entre 3 e 300 caracteres", http.StatusBadRequest)
 		return
 	}
 

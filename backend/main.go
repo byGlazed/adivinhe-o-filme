@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"time"
+
 	"github.com/joho/godotenv"
 )
 
@@ -20,9 +23,14 @@ type RespostaNovaPartida struct {
 	MaxPerguntas int    `json:"max_perguntas"`
 }
 
+// debug é lido a cada chamada (e não numa variável global), porque o .env
+// só é carregado depois que o programa começa a rodar.
+func debug() bool {
+	return os.Getenv("DEBUG") == "1"
+}
+
 func saudeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Resposta{Mensagem: "Backend no ar!"})
+	escreverJSON(w, http.StatusOK, Resposta{Mensagem: "Backend no ar!"})
 }
 
 func criarPartidaHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,26 +44,49 @@ func criarPartidaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	  filme := sortearFilme()
-	p := novaPartida(filme, pedido.MaxPerguntas)
-  	log.Printf("[dev] partida %s: %s (%d), dir. %s", p.ID, filme.Titulo, filme.Ano, filme.Diretor)
+	filme := sortearFilme()
+	p, err := novaPartida(filme, pedido.MaxPerguntas)
+	if err != nil {
+		http.Error(w, err.Error(), statusDoErro(err))
+		return
+	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(RespostaNovaPartida{ID: p.ID, MaxPerguntas: p.MaxPerguntas})
+	if debug() {
+		log.Printf("[dev] partida %s: %s (%d), dir. %s", p.ID, filme.Titulo, filme.Ano, filme.Diretor)
+	}
+
+	escreverJSON(w, http.StatusCreated, RespostaNovaPartida{ID: p.ID, MaxPerguntas: p.MaxPerguntas})
 }
 
 func main() {
-	  if err := godotenv.Load(); err != nil {
-  	log.Println("aviso: arquivo .env não encontrado, usando variáveis do sistema")
-  }
-	http.HandleFunc("GET /api/saude", saudeHandler)
-	http.HandleFunc("POST /api/partidas", criarPartidaHandler)
-	http.HandleFunc("POST /api/partidas/{id}/perguntas", perguntarHandler)
-	http.HandleFunc("POST /api/partidas/{id}/palpite", palpiteHandler)
-	http.HandleFunc("GET /api/filmes/busca", buscarFilmesHandler)
-	http.Handle("/", http.FileServer(http.Dir("../frontend")))
+	if err := godotenv.Load(); err != nil {
+		log.Println("aviso: arquivo .env não encontrado, usando variáveis do sistema")
+	}
 
-	log.Println("Servidor rodando em http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	go limparPartidasAntigas()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/saude", saudeHandler)
+	mux.HandleFunc("POST /api/partidas", criarPartidaHandler)
+	mux.HandleFunc("POST /api/partidas/{id}/perguntas", perguntarHandler)
+	mux.HandleFunc("POST /api/partidas/{id}/palpite", palpiteHandler)
+	mux.HandleFunc("GET /api/filmes/busca", buscarFilmesHandler)
+	mux.Handle("/", http.FileServer(http.Dir("../frontend")))
+
+	porta := os.Getenv("PORT")
+	if porta == "" {
+		porta = "8080"
+	}
+
+	servidor := &http.Server{
+		Addr:              ":" + porta,
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      45 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
+	log.Println("Servidor rodando em http://localhost:" + porta)
+	log.Fatal(servidor.ListenAndServe())
 }

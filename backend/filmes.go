@@ -17,7 +17,7 @@ type Filme struct {
 	Elenco         []string
 	DuracaoMin     int
 	Sinopse        string
-	Capa 		   string
+	Capa           string
 }
 
 // Plano B, caso o TMDb esteja fora do ar ou sem token.

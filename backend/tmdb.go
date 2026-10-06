@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
-	"net/url"
 )
 
 var clienteHTTP = &http.Client{Timeout: 10 * time.Second}
@@ -97,7 +97,7 @@ func sortearFilmeTMDb() (Filme, error) {
 	}
 
 	if d.PosterPath != "" {
-	f.Capa = "https://image.tmdb.org/t/p/w500" + d.PosterPath
+		f.Capa = "https://image.tmdb.org/t/p/w500" + d.PosterPath
 	}
 
 	if len(d.ReleaseDate) >= 4 {
