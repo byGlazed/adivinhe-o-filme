@@ -56,7 +56,7 @@ func perguntarHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	var pedido PedidoPergunta
-	if err := json.NewDecoder(r.Body).Decode(&pedido); err != nil || strings.TrimSpace(pedido.Pergunta) == "" {
+	if err := json.NewDecoder(r.Body).Decode(&pedido); err != nil {
 		http.Error(w, "envie uma pergunta", http.StatusBadRequest)
 		return
 	}
@@ -68,6 +68,13 @@ func perguntarHandler(w http.ResponseWriter, r *http.Request) {
 	p, err := registrarPergunta(id)
 	if err != nil {
 		http.Error(w, err.Error(), statusDoErro(err))
+		return
+	}
+
+	// Teto global de chamadas à IA, para proteger a cota gratuita do Gemini
+	if !limiteGlobalIA.Allow() {
+		desfazerPergunta(id)
+		http.Error(w, "muitos jogadores perguntando agora, tente de novo em alguns segundos (esta pergunta não foi contada)", http.StatusServiceUnavailable)
 		return
 	}
 

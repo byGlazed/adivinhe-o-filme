@@ -125,25 +125,27 @@ func finalizarPartida(id, palpite string, filmeID int) (bool, Partida, error) {
 	return acertou, *p, nil
 }
 
-// limparPartidasAntigas roda em segundo plano e apaga as partidas expiradas.
+// removerExpiradas apaga as partidas vencidas e devolve quantas removeu e quantas sobraram.
+func removerExpiradas() (removidas, ativas int) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for id, p := range partidas {
+		if time.Since(p.CriadaEm) > duracaoMaxPartida {
+			delete(partidas, id)
+			removidas++
+		}
+	}
+	return removidas, len(partidas)
+}
+
+// limparPartidasAntigas roda em segundo plano e chama a limpeza a cada minuto.
 func limparPartidasAntigas() {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		removidas := 0
-
-		mutex.Lock()
-		for id, p := range partidas {
-			if time.Since(p.CriadaEm) > duracaoMaxPartida {
-				delete(partidas, id)
-				removidas++
-			}
-		}
-		ativas := len(partidas)
-		mutex.Unlock()
-
-		if removidas > 0 {
+		if removidas, ativas := removerExpiradas(); removidas > 0 {
 			log.Printf("limpeza: %d partida(s) expirada(s) removida(s), %d ativa(s)", removidas, ativas)
 		}
 	}

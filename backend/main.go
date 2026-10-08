@@ -65,12 +65,18 @@ func main() {
 
 	go limparPartidasAntigas()
 
+	// Limites por visitante: requisições por segundo e "rajada" permitida
+	limCriar := novoLimitadorPorIP(0.1, 3)     // 1 partida a cada 10 s
+	limPerguntar := novoLimitadorPorIP(0.5, 5) // 1 pergunta a cada 2 s
+	limPalpite := novoLimitadorPorIP(0.5, 5)
+	limBusca := novoLimitadorPorIP(5, 10) // o autocomplete faz várias buscas
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/saude", saudeHandler)
-	mux.HandleFunc("POST /api/partidas", criarPartidaHandler)
-	mux.HandleFunc("POST /api/partidas/{id}/perguntas", perguntarHandler)
-	mux.HandleFunc("POST /api/partidas/{id}/palpite", palpiteHandler)
-	mux.HandleFunc("GET /api/filmes/busca", buscarFilmesHandler)
+	mux.HandleFunc("POST /api/partidas", limitar(limCriar, criarPartidaHandler))
+	mux.HandleFunc("POST /api/partidas/{id}/perguntas", limitar(limPerguntar, perguntarHandler))
+	mux.HandleFunc("POST /api/partidas/{id}/palpite", limitar(limPalpite, palpiteHandler))
+	mux.HandleFunc("GET /api/filmes/busca", limitar(limBusca, buscarFilmesHandler))
 	mux.Handle("/", http.FileServer(http.Dir("../frontend")))
 
 	porta := os.Getenv("PORT")
@@ -80,7 +86,7 @@ func main() {
 
 	servidor := &http.Server{
 		Addr:              ":" + porta,
-		Handler:           mux,
+		Handler:           limitarCorpo(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      45 * time.Second,
